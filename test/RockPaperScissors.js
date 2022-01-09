@@ -2,6 +2,8 @@
 const RockPaperScissors = artifacts.require("RockPaperScissors");
  
 contract('RockPaperScissors', (accounts) => {
+  const Hand = {NONE: 0, ROCK: 1, PAPER: 2, SCISSORS: 3}
+
   const catchRevert = require("./exceptions.js").catchRevert;
 
   // initialise the contract instance before running tests
@@ -10,12 +12,13 @@ contract('RockPaperScissors', (accounts) => {
     contractInstance = await RockPaperScissors.deployed();
   })
 
-  it('Player 1 address', async() => {
-    const player1 = await contractInstance.player1.call();
-    console.log(player1);
-    assert.equal(accounts[0], player1);
+  describe('Player 1 address', async() => {
+    it('Check if player1 is contract sender', async() => {
+      const player1 = await contractInstance.player1.call();
+      assert.equal(accounts[0], player1);
 
-  })
+    })
+  });
 
   describe('Player 2 address', async() => {
 
@@ -34,5 +37,55 @@ contract('RockPaperScissors', (accounts) => {
     })
 
   })
+
+  describe('Player 1 hand', async() => {
+    it('Set hand to rock', async() => {
+      await contractInstance.setHand(Hand.ROCK);
+      const hand1 = await contractInstance.getHand();
+      assert.equal(hand1, Hand.ROCK)
+    })
+
+    it('Set hand to paper', async() => {
+      await contractInstance.setHand(Hand.PAPER);
+      const hand1 = await contractInstance.getHand();
+      assert.equal(hand1, Hand.PAPER)
+    })
+
+    it('Set hand to scissors', async() => {
+      await contractInstance.setHand(Hand.SCISSORS);
+      const hand1 = await contractInstance.getHand();
+      assert.equal(hand1, Hand.SCISSORS)
+    })
+  });
+
+  describe('Player 2 hand', async() => {
+    it('Set hand to rock', async() => {
+      await contractInstance.setHand(Hand.ROCK, {from: accounts[1]});
+      const hand1 = await contractInstance.getHand({from: accounts[1]});
+      assert.equal(hand1, Hand.ROCK)
+    })
+
+    it('Set hand to paper', async() => {
+      await contractInstance.setHand(Hand.PAPER, {from: accounts[1]});
+      const hand1 = await contractInstance.getHand({from: accounts[1]});
+      assert.equal(hand1, Hand.PAPER)
+    })
+
+    it('Set hand to scissors', async() => {
+      await contractInstance.setHand(Hand.SCISSORS, {from: accounts[1]});
+      const hand1 = await contractInstance.getHand({from: accounts[1]});
+      assert.equal(hand1, Hand.SCISSORS)
+    })
+  });
+
+  describe('Player 3 hand', async() => {
+    it('Expect revert when player 3 tries to set hand', async() => {
+      await catchRevert(contractInstance.setHand(Hand.ROCK, {from: accounts[2]}));
+    })
+
+    it('Expect revert when player 3 tries to get hand', async() => {
+      await catchRevert(contractInstance.getHand({from: accounts[2]}));
+    })
+  });
 
 });
